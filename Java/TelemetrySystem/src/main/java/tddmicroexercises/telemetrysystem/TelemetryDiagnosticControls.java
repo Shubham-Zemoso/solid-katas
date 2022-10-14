@@ -1,15 +1,17 @@
 package tddmicroexercises.telemetrysystem;
 
-public class TelemetryDiagnosticControls
+public class TelemetryDiagnosticControls implements  DiagnosticControls
 {
     private final String DiagnosticChannelConnectionString = "*111#";
-    
-    private final TelemetryClient telemetryClient;
+
+    private TelemetryTransmissionServiceImpl telemetryTransmissionService ;
+    private TelemetryConnectionServiceImpl telemetryConnectionService;
     private String diagnosticInfo = "";
 
-        public TelemetryDiagnosticControls()
+        public TelemetryDiagnosticControls(TelemetryTransmissionServiceImpl telemetryTransmissionService, TelemetryConnectionServiceImpl telemetryConnectionService)
         {
-            telemetryClient = new TelemetryClient();
+            this.telemetryTransmissionService = telemetryTransmissionService;
+            this.telemetryConnectionService = telemetryConnectionService;
         }
         
         public String getDiagnosticInfo(){
@@ -24,21 +26,21 @@ public class TelemetryDiagnosticControls
         {
             diagnosticInfo = "";
 
-            telemetryClient.disconnect();
+            telemetryConnectionService.disconnect();
     
             int retryLeft = 3;
-            while (telemetryClient.getOnlineStatus() == false && retryLeft > 0)
+            while (telemetryConnectionService.getOnlineStatus() == false && retryLeft > 0)
             {
-                telemetryClient.connect(DiagnosticChannelConnectionString);
+                telemetryConnectionService.connect(DiagnosticChannelConnectionString);
                 retryLeft -= 1;
             }
              
-            if(telemetryClient.getOnlineStatus() == false)
+            if(telemetryConnectionService.getOnlineStatus() == false)
             {
                 throw new Exception("Unable to connect.");
             }
     
-            telemetryClient.send(TelemetryClient.DIAGNOSTIC_MESSAGE);
-            diagnosticInfo = telemetryClient.receive();
+            telemetryTransmissionService.send(TelemetryClient.DIAGNOSTIC_MESSAGE);
+            diagnosticInfo = telemetryTransmissionService.receive();
     }
 }
